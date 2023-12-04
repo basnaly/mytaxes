@@ -1,0 +1,25 @@
+{% extends "portfolio/layout.html" %}
+
+{% block body %}
+
+    <div>
+        {{ message }}
+
+        <form action="{% url 'login' %}" method="post" class="container d-flex flex-column align-items-center m-4">
+            {% csrf_token %}
+                
+            <div class="">
+                {{ form }}
+            </div>
+
+            <button class="btn mt-4" type="submit">Login</button>
+        </form>
+
+        <div class="m-2 text-center">
+            Don't have an account?  
+            <a href="{% url 'register' %}" class="ms-2">Register here.</a>
+        </div>
+
+    </div>
+           
+{% endblock %}

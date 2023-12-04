@@ -1,0 +1,84 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}My Taxes{% endblock %}</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+        <link href="{% static 'styles.css' %}" rel="stylesheet">
+    </head>
+
+    <body class="vh-100 d-flex flex-column">
+
+        <nav class="navbar navbar-expand-lg ps-2 flex-shrink-0">
+            <a class="navbar-brand px-1 fs-4" href="/">MyTaxes</a>
+              
+            <div class="w-100 fs-5" id="navbarNav">
+				<ul class="navbar-nav mr-auto ms-4 mt-2 nav-underline">
+
+					{% if user.is_authenticated %}
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'transfer' %}">Transfer</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Forex</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Trades & Taxes</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Dividends & Taxes</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Summary</a>
+						</li>
+
+						<div class="dropstart ms-auto">
+							<a class="btn btn-light dropdown-toggle mt-2 me-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+									<path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+								</svg>
+							</a>
+							<ul class="dropdown-menu">
+								<li class="text-center my-1 fs-5">Hello, {{ user.first_name|title }}!</li>
+								<li><a class="dropdown-item" href="#">My profile</a></li>
+								<li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
+							</ul>
+						</div>
+					
+					{% else %}
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'login' %}">Login</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'register' %}">Register</a>
+						</li>
+					{% endif %}
+				</ul>
+            </div>
+            
+        </nav>
+
+        <div>
+            {% block body %}
+            {% endblock %}
+        </div>
+
+    </body>
+
+    <footer class="vw-100 small d-flex justify-content-between py-2 mt-auto fs-6">
+        <span class="ms-4">MyTaxes for <strong>{{ previous_year }}</strong> financical year</span>
+        <span>Beit-Shemesh, Israel 2023</span>
+        <span>
+            <a class="tax me-4" target="_blank" href="https://www.gov.il/he/departments/israel_tax_authority/govil-landing-page">
+                Israel Tax Authority
+            </a>
+        </span>
+    </footer>
+
+</html>
+

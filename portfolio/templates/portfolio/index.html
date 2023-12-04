@@ -1,0 +1,32 @@
+{% extends "portfolio/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <div class="mt-3">
+
+        {% if message %}
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const message = document.querySelector('#message').innerHTML;
+                    setTimeout(() => {
+                        document.querySelector('#message').innerHTML = '';
+                        window.location.replace("{% url 'index' %}"); 
+                    }, 3000)
+                })
+            </script>
+
+            <div class="mt-4 text-center fs-5" id="message" style="color: var(--turquoise-dark)">
+                {{ message }}
+            </div>
+        
+        {% endif %}
+
+        <div>
+            Index
+        </div>
+
+    </div>
+
+{% endblock %}

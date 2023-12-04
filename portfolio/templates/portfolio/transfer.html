@@ -1,0 +1,22 @@
+{% extends "portfolio/layout.html" %}
+
+{% block body %}
+
+    <div class="d-flex flex-column align-items-center">
+        {{ message }}
+
+        <div class="mt-3 fs-5 ">Please fill the fields!</div>
+
+        <form action="{% url 'transfer' %}" method="post" class="container d-flex flex-column align-items-center m-4">
+            {% csrf_token %}
+                
+            <div class="">
+                {{ form }}
+            </div>
+
+            <button class="btn mt-4" type="submit">Submit</button>
+        </form>
+
+    </div>
+           
+{% endblock %}

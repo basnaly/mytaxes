@@ -1,0 +1,54 @@
+html {
+    --turquoise-light: #D1E8E2;
+    --turquoise-dark: #116466;
+    --bedge-light: #FFCB9A;
+    --bedge-dark: #D9B08C;
+    --gray-dark: #203531;
+}
+
+body {
+    background-color: var(--turquoise-light);
+}
+
+.nav-link {
+    color: var(--gray-dark);
+}
+
+.navbar,footer {
+    background-color: var(--bedge-light);
+    color: var(--gray-dark);
+}
+
+.navbar-brand {
+    border: 1px solid #116466;
+    border-radius: 10px;
+}
+
+.tax {
+    text-decoration: none;
+    color: var(--gray-dark);
+}
+
+.register {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-gap: 20px;
+}
+
+.btn {
+    --bs-btn-bg: var(--turquoise-dark);
+    --bs-btn-color: white;
+}
+
+a {
+    color: var(--turquoise-dark);
+}
+
+.errorlist {
+    grid-row: -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
+    color: var(--turquoise-dark);
+    font-size: 18px;
+
+}
