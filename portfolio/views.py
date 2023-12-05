@@ -9,10 +9,10 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
-from portfolio.forms import RegisterForm, LoginForm, TransferForm
+from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm
 
 import datetime
-from .models import User, Transfer
+from .models import User, Transfer, Forex
 
 
 def index(request):
@@ -99,9 +99,12 @@ def logout_view(request):
 @login_required   
 def transfer(request):
     user = User.objects.get(id=request.user.id)
+    user_transfers = Transfer.objects.filter(owner=user)
+    
     if request.method == "GET":
         return render(request, "portfolio/transfer.html", {
-            "form": TransferForm
+            "form": TransferForm,
+            "transfers": user_transfers
         })
     else:
         form = TransferForm(request.POST)
@@ -120,17 +123,63 @@ def transfer(request):
             except IntegrityError:
                 return render(request, "portfolio/transfer.html", {
                     "message": "Something went wrong. Try again later.",
-                    "form": form
+                    "form": form,
+                    "transfers": user_transfers
                 })
             return render(request, "portfolio/index.html", {
                 "message": f"Your transfer of { transfer_sum } {transfer_currency} was successfully saved!",
                 "transfer_sum": transfer_sum,
-                "transfer_currency": transfer_currency
+                "transfer_currency": transfer_currency,
+                "transfers": user_transfers
             })
         else:
             return render(request, "portfolio/transfer.html", {
+                "message": "The form is not valid!",
+                "form": form,
+                "transfers": user_transfers
+            })
+            
+
+@login_required
+def forex(request):
+    user = User.objects.get(id=request.user.id)    
+    if request.method == "GET":
+        return render(request, "portfolio/forex.html", {
+            "form": ForexForm
+        })  
+    else:
+        form = ForexForm(request.POST)
+        if form.is_valid():
+            forex_date = form.cleaned_data["forex_date"]
+            selling_sum = form.cleaned_data["selling_sum"]
+            selling_currency = form.cleaned_data["selling_currency"]
+            rate = form.cleaned_data["rate"] 
+            purchasing_currency = form.cleaned_data["purchasing_currency"]
+            try:
+                new_forex = Forex.objects.create(
+                    forex_date = forex_date, 
+                    selling_sum = selling_sum,
+                    selling_currency = selling_currency,
+                    rate = rate,
+                    purchasing_sum = round(selling_sum/rate, 2),
+                    purchasing_currency = purchasing_currency,
+                    owner = user
+                )
+                new_forex.save()
+            except IntegrityError:
+                return render(request, "portfolio/forex.html", {
+                    "message": "Something went wrong. Try again later.",
+                    "form": form
+                })
+            return render(request, "portfolio/index.html", {
+                "message": f"Your request to exchange { selling_currency } { selling_sum } to { purchasing_currency } was successfully done!",
+                "form": form
+            })
+        else:
+            return render(request, "portfolio/forex.html", {
                 "message": "The form is not valid!",
                 "form": form
             })
             
             
+         

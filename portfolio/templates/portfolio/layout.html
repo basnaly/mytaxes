@@ -15,7 +15,7 @@
     <body class="vh-100 d-flex flex-column">
 
         <nav class="navbar navbar-expand-lg ps-2 flex-shrink-0">
-            <a class="navbar-brand px-1 fs-4" href="/">MyTaxes</a>
+            <a class="navbar-brand px-1 fs-4 shadow" href="/">MyTaxes</a>
               
             <div class="w-100 fs-5" id="navbarNav">
 				<ul class="navbar-nav mr-auto ms-4 mt-2 nav-underline">
@@ -25,10 +25,13 @@
 							<a class="nav-link" href="{% url 'transfer' %}">Transfer</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#">Forex</a>
+							<a class="nav-link" href="{% url 'forex' %}">Forex</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#">Trades & Taxes</a>
+							<a class="nav-link" href="#">Buy Stocks</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Sell Stocks & Taxes</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="#">Dividends & Taxes</a>

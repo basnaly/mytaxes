@@ -1,0 +1,51 @@
+{% extends "portfolio/layout.html" %}
+
+{% block body %}
+
+    <div class="d-flex flex-column align-items-center">
+        {{ message }}
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+
+                const input_rate = document.querySelector('#rate');
+                const input_selling_sum = document.querySelector('#sell-sum');
+
+                function calculatePurchasingSum () {
+                    const rate = parseFloat(input_rate.value);
+                    const selling_sum = parseFloat(input_selling_sum.value);
+                    const purchasing_sum = +(selling_sum/rate).toFixed(2)
+                    
+                    if (isNaN(purchasing_sum)) {
+                        document.querySelector('#buy-sum').innerHTML = '';
+                    }
+                    else {
+                        document.querySelector('#buy-sum').innerHTML = purchasing_sum;
+                    }
+                    
+                }
+
+                input_rate.addEventListener('input', calculatePurchasingSum);
+                input_selling_sum.addEventListener('input', calculatePurchasingSum);                
+            })
+        </script>
+
+        <div class="mt-3 fs-5">Please fill the fields!</div>
+
+        <form action="{% url 'forex' %}" method="post" class="container d-flex flex-column align-items-center m-4">
+            {% csrf_token %}
+                
+            <div class="grid-2-columns">
+                {{ form }}
+                <div class="forex-sum ps-2">
+                    Purchasing_sum sum:
+                    <span id='buy-sum' class='fw-bold'></span>
+                </div>
+            </div>
+
+            <button class="btn mt-4" type="submit">Submit</button>
+        </form>
+
+    </div>
+           
+{% endblock %}

@@ -9,5 +9,6 @@ urlpatterns = [
     path("logout", views.logout_view, name="logout"),
     
     path("transfer", views.transfer, name="transfer"),
+    path("forex", views.forex, name="forex"),
     
 ]

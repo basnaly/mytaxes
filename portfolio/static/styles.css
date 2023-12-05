@@ -29,7 +29,7 @@ body {
     color: var(--gray-dark);
 }
 
-.register {
+.grid-2-columns {
     display: grid;
     grid-template-columns: 50% 50%;
     grid-gap: 20px;
@@ -50,5 +50,15 @@ a {
     grid-column-end: -1;
     color: var(--turquoise-dark);
     font-size: 18px;
+}
 
+.forex-sum {
+    border: 1px solid white; 
+    border-radius: 10px;  
+    line-height: 35px;
+}
+
+.table {
+    --bs-table-bg-type: var(--bedge-light);
+    /* --bs-table-color-type: white; */
 }
