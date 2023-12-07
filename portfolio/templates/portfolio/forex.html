@@ -2,50 +2,90 @@
 
 {% block body %}
 
-    <div class="d-flex flex-column align-items-center">
-        {{ message }}
+    <div class="d-flex justify-content-evenly">
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
+        <div class="d-flex flex-column align-items-center mx-3 w-25 shadow mt-4">
+            {{ message }}
 
-                const input_rate = document.querySelector('#rate');
-                const input_selling_sum = document.querySelector('#sell-sum');
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
 
-                function calculatePurchasingSum () {
-                    const rate = parseFloat(input_rate.value);
-                    const selling_sum = parseFloat(input_selling_sum.value);
-                    const purchasing_sum = +(selling_sum/rate).toFixed(2)
-                    
-                    if (isNaN(purchasing_sum)) {
-                        document.querySelector('#buy-sum').innerHTML = '';
+                    const input_rate = document.querySelector('#rate');
+                    const input_selling_sum = document.querySelector('#sell-sum');
+
+                    function calculatePurchasingSum () {
+                        const rate = parseFloat(input_rate.value);
+                        const selling_sum = parseFloat(input_selling_sum.value);
+                        const purchasing_sum = +(selling_sum/rate).toFixed(2)
+                        
+                        if (isNaN(purchasing_sum)) {
+                            document.querySelector('#buy-sum').innerHTML = '';
+                        }
+                        else {
+                            document.querySelector('#buy-sum').innerHTML = purchasing_sum;
+                        }
+                        
                     }
-                    else {
-                        document.querySelector('#buy-sum').innerHTML = purchasing_sum;
-                    }
+
+                    input_rate.addEventListener('input', calculatePurchasingSum);
+                    input_selling_sum.addEventListener('input', calculatePurchasingSum);                
+                })
+            </script>
+
+            <div class="mt-3 fs-5 fw-bold">Please fill the fields!</div>
+
+            <form action="{% url 'forex' %}" method="post" class="container d-flex flex-column align-items-center m-4">
+                {% csrf_token %}
                     
-                }
-
-                input_rate.addEventListener('input', calculatePurchasingSum);
-                input_selling_sum.addEventListener('input', calculatePurchasingSum);                
-            })
-        </script>
-
-        <div class="mt-3 fs-5">Please fill the fields!</div>
-
-        <form action="{% url 'forex' %}" method="post" class="container d-flex flex-column align-items-center m-4">
-            {% csrf_token %}
-                
-            <div class="grid-2-columns">
-                {{ form }}
-                <div class="forex-sum ps-2">
-                    Purchasing_sum sum:
-                    <span id='buy-sum' class='fw-bold'></span>
+                <div class="">
+                    {{ form }}
+                    <div class="forex-sum ps-2">
+                        Purchasing sum:
+                        <span id='buy-sum' class='fw-bold'></span>
+                    </div>
                 </div>
-            </div>
 
-            <button class="btn mt-4" type="submit">Submit</button>
-        </form>
+                <button class="btn mt-4" type="submit">Submit</button>
+            </form>
+        </div>
 
+        <div class="d-flex flex-column align-items-center mx-3 mt-3 w-50">
+            <div class="mt-3 fs-5 mb-4 fw-bold">My Exchanges</div>
+            {% if exchanges %}
+                <table class="table table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Selling Sum</th>
+                            <th scope="col">Selling Currency</th>
+                            <th scope="col">Rate</th>
+                            <th scope="col">Purchasing Currency</th>
+                            <th scope="col">Purchasing Sum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exchange in exchanges %}
+                            <tr>
+                                <td>{{ exchange.forex_date|date:"Y-m-d" }}</td>
+                                <td>{{ exchange.selling_sum|floatformat:2 }}</td>
+                                <td>{{ exchange.selling_currency }}</td>
+                                <td>{{ exchange.rate }}</td>
+                                <td>{{ exchange.purchasing_currency }}</td>
+                                <td>{{ exchange.purchasing_sum|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %} 
+                        <tr class="fw-bold">
+                            <td>Total:</td>
+                            <td>{{ selling_sums }}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>{{ purchasing_sums }}</td>
+                        </tr>               
+                    </tbody>
+                </table>
+            {% endif %}   
+        </div>
     </div>
            
 {% endblock %}

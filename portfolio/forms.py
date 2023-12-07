@@ -19,9 +19,14 @@ class TransferForm(forms.Form):
     
 class ForexForm(forms.Form):
     forex_date = forms.DateField(widget=forms.DateInput(attrs={'placeholder': 'Date of forex', 'type': 'date', 'class': 'form-control mb-3'}), label='')
-    rate = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Rate', 'id': 'rate', 'class' : 'form-control mb-3'}), label='')
     selling_currency = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Selling currency', 'id': 'sell-curr', 'class': 'form-control mb-3'}), label='')
     selling_sum = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Selling sum', 'id': 'sell-sum', 'class': 'form-control mb-3'}), label='')
-    purchasing_currency = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Purchasing currency', 'id': 'buy-curr', 'class': 'form-control mb-auto'}), label='')
+    rate = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Rate', 'id': 'rate', 'class' : 'form-control mb-3'}), label='')
+    purchasing_currency = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Purchasing currency', 'id': 'buy-curr', 'class': 'form-control mb-3'}), label='')
     
-    
+class Buy_StockForm(forms.Form):
+    buy_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mb-3'}), label='')
+    stock = forms.CharField(widget=forms.TimeInput(attrs={'placeholder': 'Symbol of stock', 'class': 'form-control mb-3'}), label='')
+    price = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Price of stock', 'id': 'price-stock', 'class': 'form-control mb-3'}), label='')
+    quantity = forms.IntegerField(widget=forms.NumberInput(attrs={'placeholder': 'Q-ty of stocks', 'id': 'quantity-stocks', 'class': 'form-control mb-3'}), label='')
+       

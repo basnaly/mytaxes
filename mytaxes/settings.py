@@ -117,6 +117,8 @@ USE_L10N = True
 
 USE_THOUSAND_SEPARATOR = True
 
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
 
 
 # Static files (CSS, JavaScript, Images)

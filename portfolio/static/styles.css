@@ -62,3 +62,16 @@ a {
     --bs-table-bg-type: var(--bedge-light);
     /* --bs-table-color-type: white; */
 }
+
+#message {
+    margin-left: 50px; 
+    margin-right: 50px;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--turquoise-dark);
+}
+
+.alert-error {
+    color: red;
+}

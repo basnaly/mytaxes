@@ -1,0 +1,87 @@
+{% extends "portfolio/layout.html" %}
+
+{% block body %}
+
+    <div class="d-flex justify-content-evenly align-items-start">
+
+        <div class="d-flex flex-column align-items-center mx-3 w-25 shadow mt-4">
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+
+                    const input_price_stock = document.querySelector('#price-stock');
+                    const input_quantity_stocks = document.querySelector('#quantity-stocks');
+
+                    function calculateSumOfStocks () {
+                        const price = parseFloat(input_price_stock.value);
+                        const quantity = parseFloat(input_quantity_stocks.value);
+                        const sum_of_stocks = +(price * quantity).toFixed(2)
+                        
+                        if (isNaN(sum_of_stocks)) {
+                            document.querySelector('#stocks-sum').innerHTML = '';
+                        }
+                        else {
+                            document.querySelector('#stocks-sum').innerHTML = sum_of_stocks;
+                        }    
+                    }
+
+                    input_price_stock.addEventListener('input', calculateSumOfStocks);
+                    input_quantity_stocks.addEventListener('input', calculateSumOfStocks); 
+                                   
+                })
+            </script>
+
+            <div class="mt-3 fs-5 fw-bold">Please fill the fields!</div>
+
+            <form action="{% url 'buy_stock' %}" method="post" class="container d-flex flex-column align-items-center m-4">
+                {% csrf_token %}
+                    
+                <div class="">
+                    {{ form }}
+                    <div class="forex-sum ps-2">
+                        Sum of Stocks:
+                        <span id='stocks-sum' class='fw-bold'></span>
+                    </div>
+                </div>
+
+                <button class="btn mt-4" type="submit">Submit</button>
+            </form>
+        </div>
+
+        <div class="d-flex flex-column align-items-center mx-3 mt-3 w-50">
+            <div class="mt-3 fs-5 mb-4 fw-bold">My Purchased Stocks</div>
+            {% if stocks %}
+                <table class="table table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date of purchasing stocks</th>
+                            <th scope="col">Symbol of Stock</th>
+                            <th scope="col">Price of Stock</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Sum Of Stocks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in stocks %}
+                            <tr>
+                                <td>{{ stock.buy_date|date:"Y-m-d" }}</td>
+                                <td>{{ stock.stock }}</td>
+                                <td>{{ stock.price|floatformat:2 }}</td>
+                                <td>{{ stock.quantity }}</td>
+                                <td>{{ stock.sum_of_stocks|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %} 
+                        <tr class="fw-bold">
+                            <td>Total:</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>{{ total_stocks_sum }}</td>
+                        </tr>               
+                    </tbody>
+                </table>
+            {% endif %}   
+        </div>
+    </div>
+           
+{% endblock %}

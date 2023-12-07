@@ -28,4 +28,15 @@ class Forex(models.Model):
     
     def __str__(self):
         return f"On day {self.forex_date} user {self.owner} purchased {self.purchasing_sum} {self.purchasing_currency} for {self.selling_sum} {self.selling_currency} ({self.rate})"
+  
+class Buy_Stock(models.Model):
+    buy_date = models.DateField()
+    stock = models.CharField(max_length=10)
+    price = models.FloatField()
+    quantity = models.IntegerField()
+    sum_of_stocks = models.FloatField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="stocks")
     
+    def __str__(self):
+        return f"{self.buy_date} {self.stock} {self.price} {self.quantity} {self.sum_of_stocks} {self.owner}"
+      

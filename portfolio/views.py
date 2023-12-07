@@ -9,18 +9,24 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
-from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm
+from django.db.models import Sum
+from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm
+from django.contrib import messages
 
 import datetime
-from .models import User, Transfer, Forex
+from .models import User, Transfer, Forex, Buy_Stock
+
+
+COMMITIONS = {
+    "Forex": 2,
+    "Buy": 1
+}
 
 
 def index(request):
     user = User.objects.get(id=request.user.id)
-    previous_year = datetime.datetime.now().year - 1
     return render(request, "portfolio/index.html", {
         "user": user,
-        "previous_year": previous_year
     })
     
 def register(request):
@@ -95,16 +101,26 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
    
+   
+def get_previous_year(request): 
+    previous_year = datetime.datetime.now().year - 1
+    return JsonResponse({
+        "previous_year": str(previous_year)
+    })
+
 
 @login_required   
 def transfer(request):
     user = User.objects.get(id=request.user.id)
     user_transfers = Transfer.objects.filter(owner=user)
+    # abc = sum([el.transfer_sum for el in user_transfers])
+    transfers_sum = Transfer.objects.all().aggregate(Sum('transfer_sum'))['transfer_sum__sum']
     
     if request.method == "GET":
         return render(request, "portfolio/transfer.html", {
             "form": TransferForm,
-            "transfers": user_transfers
+            "transfers": user_transfers,
+            "transfers_sum": transfers_sum,
         })
     else:
         form = TransferForm(request.POST)
@@ -121,31 +137,36 @@ def transfer(request):
                 )
                 new_transfer.save()
             except IntegrityError:
+                messages.error(request, "Something went wrong. Try again later.")
                 return render(request, "portfolio/transfer.html", {
-                    "message": "Something went wrong. Try again later.",
                     "form": form,
-                    "transfers": user_transfers
+                    "transfers": user_transfers,
+                    "transfers_sum": transfers_sum,
                 })
-            return render(request, "portfolio/index.html", {
-                "message": f"Your transfer of { transfer_sum } {transfer_currency} was successfully saved!",
-                "transfer_sum": transfer_sum,
-                "transfer_currency": transfer_currency,
-                "transfers": user_transfers
-            })
+            messages.success(request, f"Your transfer of { transfer_sum } {transfer_currency} was successfully saved!")
+            return HttpResponseRedirect(reverse("transfer"))
         else:
+            messages.error(request, "The form is not valid!")
             return render(request, "portfolio/transfer.html", {
-                "message": "The form is not valid!",
                 "form": form,
-                "transfers": user_transfers
+                "transfers": user_transfers,
+                "transfers_sum": transfers_sum,
             })
             
 
 @login_required
 def forex(request):
-    user = User.objects.get(id=request.user.id)    
+    user = User.objects.get(id=request.user.id)   
+    user_exchanges = Forex.objects.filter(owner=user)
+    selling_sums = round(Forex.objects.all().aggregate(Sum('selling_sum'))['selling_sum__sum'], 2)
+    purchasing_sums = round(Forex.objects.all().aggregate(Sum('purchasing_sum'))['purchasing_sum__sum'], 2)
+
     if request.method == "GET":
         return render(request, "portfolio/forex.html", {
-            "form": ForexForm
+            "form": ForexForm,
+            "exchanges": user_exchanges,
+            "selling_sums": selling_sums,
+            "purchasing_sums": round(purchasing_sums, 2),
         })  
     else:
         form = ForexForm(request.POST)
@@ -167,19 +188,69 @@ def forex(request):
                 )
                 new_forex.save()
             except IntegrityError:
+                messages.error(request, "Something went wrong. Try again later.")
                 return render(request, "portfolio/forex.html", {
-                    "message": "Something went wrong. Try again later.",
-                    "form": form
+                    "form": form,
+                    "exchanges": user_exchanges,
+                    "selling_sums": selling_sums,
+                    "purchasing_sums": round(purchasing_sums, 2),
                 })
-            return render(request, "portfolio/index.html", {
-                "message": f"Your request to exchange { selling_currency } { selling_sum } to { purchasing_currency } was successfully done!",
-                "form": form
-            })
+            messages.success(request, f"Your request to exchange { selling_currency } { selling_sum } to { purchasing_currency } was successfully done!")
+            return HttpResponseRedirect(reverse("forex"))
         else:
+            messages.error(request, "The form is not valid!")
             return render(request, "portfolio/forex.html", {
-                "message": "The form is not valid!",
-                "form": form
+                "form": form,
+                "exchanges": user_exchanges,
+                "selling_sums": selling_sums,
+                "purchasing_sums": purchasing_sums,
             })
             
             
-         
+@login_required
+def buy_stock(request):
+    user = User.objects.get(id=request.user.id)
+    stocks = Buy_Stock.objects.filter(owner=user)
+    total_stocks_sum = sum([el.sum_of_stocks for el in stocks])
+    
+    if request.method == "GET":
+        return render(request, "portfolio/buy_stock.html", {
+            "form": Buy_StockForm(),
+            "stocks": stocks,
+            "total_stocks_sum": total_stocks_sum,
+        })
+        
+    else:
+        form = Buy_StockForm(request.POST)
+        if form.is_valid():
+            buy_date = form.cleaned_data["buy_date"]
+            stock = form.cleaned_data["stock"]
+            price = form.cleaned_data["price"]
+            quantity = form.cleaned_data["quantity"]
+            try:
+                purchased_stocks = Buy_Stock.objects.create(
+                    buy_date = buy_date,
+                    stock = stock,
+                    price = price,
+                    quantity = quantity,
+                    sum_of_stocks = round(price * quantity, 2),
+                    owner = user
+                ) 
+                purchased_stocks.save()
+            except IntegrityError:
+                messages.error(request, "Something went wrong. Try again later.")
+                return render(request, "portfolio/buy_stock.html", {
+                    "form": form,
+                    "stocks": stocks,
+                    "total_stocks_sum": total_stocks_sum,
+                })
+            messages.success(request, f"Your request to buy { quantity } { stock } stocks was successfully saved!")
+            return HttpResponseRedirect(reverse("buy_stock"))
+        else:
+            messages.error(request, "The form is not valid!")
+            return render(request, "portfolio/buy_stock.html", {
+                "form": form,
+                "stocks": stocks,
+                "total_stocks_sum": total_stocks_sum,
+            })
+        
