@@ -1,4 +1,6 @@
 from django import forms
+from .models import User, Transfer, Forex, Buy_Stock
+
 
 class RegisterForm(forms.Form):
     username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Username', 'class': 'form-control'}), label='')
@@ -26,7 +28,13 @@ class ForexForm(forms.Form):
     
 class Buy_StockForm(forms.Form):
     buy_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mb-3'}), label='')
-    stock = forms.CharField(widget=forms.TimeInput(attrs={'placeholder': 'Symbol of stock', 'class': 'form-control mb-3'}), label='')
+    stock = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Symbol of stock', 'class': 'form-control mb-3'}), label='')
     price = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Price of stock', 'id': 'price-stock', 'class': 'form-control mb-3'}), label='')
     quantity = forms.IntegerField(widget=forms.NumberInput(attrs={'placeholder': 'Q-ty of stocks', 'id': 'quantity-stocks', 'class': 'form-control mb-3'}), label='')
        
+class Dividend_TaxForm(forms.Form):
+    dividend_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mb-3'}), label='')
+    stock = forms.CharField(widget=forms.Select(attrs={'plaseholder': 'Symbol of stock', 'class': 'form-control mb-3'}, choices=[]),  label='')
+    dividend_per_share = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Dividend per share', 'id': 'dividend-share', 'class': 'form-control mb-3'}), label='')
+    quantity = forms.IntegerField(widget=forms.NumberInput(attrs={'placeholder': 'Q-ty of stocks', 'id': 'quantity-stocks', 'class': 'form-control mb-3'}), label='')
+    

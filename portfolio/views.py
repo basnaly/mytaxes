@@ -10,11 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 from django.db.models import Sum
-from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm
+from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm, Dividend_TaxForm
 from django.contrib import messages
 
 import datetime
-from .models import User, Transfer, Forex, Buy_Stock
+from .models import User, Transfer, Forex, Buy_Stock, Dividend_Tax
 
 
 COMMITIONS = {
@@ -253,4 +253,60 @@ def buy_stock(request):
                 "stocks": stocks,
                 "total_stocks_sum": total_stocks_sum,
             })
+            
+            
+@login_required
+def dividend_tax(request):
+    user = User.objects.get(id=request.user.id)
+    dividends_taxes = Dividend_Tax.objects.filter(owner=user)
+    stocks = Buy_Stock.objects.filter(owner=user).values('stock').distinct()
+    stock_options = [(el['stock'], el['stock']) for el in stocks]
+    total_dividends = round(sum([el.dividend_sum for el in dividends_taxes]), 2)
+    total_taxes = round(sum([el.tax for el in dividends_taxes]), 2)
+    
+    if request.method == "GET":
+        form = Dividend_TaxForm()
+        form.fields['stock'].widget.choices = stock_options
+        return render(request, "portfolio/dividend_tax.html", {
+            "form": form,
+            "dividends_taxes": dividends_taxes,
+            "total_dividends": total_dividends,
+            "total_taxes": total_taxes
+        })
         
+    else:
+        form = Dividend_TaxForm(request.POST)
+        if form.is_valid():
+            dividend_date = form.cleaned_data["dividend_date"]
+            stock = form.cleaned_data["stock"]
+            dividend_per_share = form.cleaned_data["dividend_per_share"]
+            quantity = form.cleaned_data["quantity"]
+            try:
+                dividend_tax = Dividend_Tax.objects.create(
+                    dividend_date = dividend_date,
+                    stock = stock,
+                    dividend_per_share = dividend_per_share,
+                    quantity = quantity,
+                    dividend_sum = round(dividend_per_share * quantity, 2),
+                    tax = round(dividend_per_share * 0.25 * quantity, 2),
+                    owner = user
+                )
+                dividend_tax.save()
+            except: 
+                messages.error(request, "Something went wrong. Try again later.")
+                return render(request, "portfolio/dividend_tax.html", {
+                    "form": form,
+                    "dividends_taxes": dividends_taxes,
+                    "total_dividends": total_dividends,
+                    "total_taxes": total_taxes,
+                })
+            messages.success(request, f"You dividend of {dividend_per_share} for {stock} stock was saccessfully added!")
+            return HttpResponseRedirect("dividend_tax")
+        else:
+            messages.error(request, "The form is not valid!")
+            return render(request, "portfolio/dividend_tax.html", {
+                "form": form,
+                "dividends_taxes": dividends_taxes,
+                "total_dividends": total_dividends,
+                "total_taxes": total_taxes
+            })

@@ -20,7 +20,7 @@ body {
 }
 
 .navbar-brand {
-    border: 1px solid #116466;
+    border: 1px solid var(--turquoise-dark);
     border-radius: 10px;
 }
 
@@ -52,15 +52,15 @@ a {
     font-size: 18px;
 }
 
-.forex-sum {
+.calculate {
     border: 1px solid white; 
     border-radius: 10px;  
     line-height: 35px;
 }
 
-.table {
-    --bs-table-bg-type: var(--bedge-light);
-    /* --bs-table-color-type: white; */
+.thead {
+    --bs-table-bg-type: var(--turquoise-dark);
+    --bs-table-color-type: white;
 }
 
 #message {

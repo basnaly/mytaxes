@@ -38,7 +38,7 @@
                     
                 <div class="">
                     {{ form }}
-                    <div class="forex-sum ps-2">
+                    <div class="calculate ps-2">
                         Sum of Stocks:
                         <span id='stocks-sum' class='fw-bold'></span>
                     </div>
@@ -48,23 +48,23 @@
             </form>
         </div>
 
-        <div class="d-flex flex-column align-items-center mx-3 mt-3 w-50">
-            <div class="mt-3 fs-5 mb-4 fw-bold">My Purchased Stocks</div>
+        <div class="d-flex flex-column align-items-center shadow px-4 pb-2 mx-3 mt-4 w-50">
+            <div class="mt-3 fs-5 mb-4 fw-bold">My Stocks</div>
             {% if stocks %}
                 <table class="table table-striped text-center">
                     <thead>
                         <tr>
-                            <th scope="col">Date of purchasing stocks</th>
+                            <th scope="col">Date</th>
                             <th scope="col">Symbol of Stock</th>
                             <th scope="col">Price of Stock</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Sum Of Stocks</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="table-group-divider">
                         {% for stock in stocks %}
                             <tr>
-                                <td>{{ stock.buy_date|date:"Y-m-d" }}</td>
+                                <td class="text-nowrap">{{ stock.buy_date|date:"Y-m-d" }}</td>
                                 <td>{{ stock.stock }}</td>
                                 <td>{{ stock.price|floatformat:2 }}</td>
                                 <td>{{ stock.quantity }}</td>

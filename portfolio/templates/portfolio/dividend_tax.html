@@ -1,0 +1,97 @@
+{% extends "portfolio/layout.html" %}
+
+{% block body %}
+
+    <div class="d-flex justify-content-evenly align-items-start">
+
+        <div class="d-flex flex-column align-items-center mx-3 w-25 shadow mt-4">
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+
+                    const input_dividend_share = document.querySelector('#dividend-share');
+                    const input_quantity_stocks = document.querySelector('#quantity-stocks');
+
+                    function calculateDividendsAndTaxes () {
+                        const dividend_share_price = parseFloat(input_dividend_share.value);
+                        const quantity = parseFloat(input_quantity_stocks.value);
+                        const sum_of_dividend = +(dividend_share_price * quantity).toFixed(2)
+                        const tax = (dividend_share_price * 0.25 * quantity).toFixed(2)
+                        
+                        if (isNaN(sum_of_dividend) || isNaN(tax)) {
+                            document.querySelector('#dividends-sum').innerHTML = '';
+                            document.querySelector('#tax-sum').innerHTML = '';
+                        }
+                        else {
+                            document.querySelector('#dividends-sum').innerHTML = sum_of_dividend;
+                            document.querySelector('#tax-sum').innerHTML = tax;
+                        }    
+                    }
+
+                    input_dividend_share.addEventListener('input', calculateDividendsAndTaxes);
+                    input_quantity_stocks.addEventListener('input', calculateDividendsAndTaxes); 
+                                   
+                })
+            </script>
+
+            <div class="mt-3 fs-5 fw-bold">Please fill the fields!</div>
+
+            <form action="{% url 'dividend_tax' %}" method="post" class="container d-flex flex-column align-items-center m-4">
+                {% csrf_token %}
+                    
+                <div class="">
+                    {{ form }}
+                    <div class="calculate ps-2 mb-3">
+                        Sum of Dividends:
+                        <span id='dividends-sum' class='fw-bold'></span>
+                    </div>
+                    <div class="calculate ps-2">
+                        Sum of Taxes:
+                        <span id='tax-sum' class='fw-bold'></span>
+                    </div>
+                </div>
+
+                <button class="btn mt-4" type="submit">Submit</button>
+            </form>
+        </div>
+
+        <div class="d-flex flex-column align-items-center shadow px-4 pb-2 mx-3 mt-4 w-50">
+            <div class="mt-3 fs-5 mb-4 fw-bold">My Dividends and Taxes</div>
+            {% if dividends_taxes %}
+                <table class="table table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Symbol of Stock</th>
+                            <th scope="col">Dividend per Share</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Sum Of Dividends</th>
+                            <th scope="col">Tax</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        {% for dividends_tax in dividends_taxes %}
+                            <tr>
+                                <td class="text-nowrap">{{ dividends_tax.dividend_date|date:"Y-m-d" }}</td>
+                                <td>{{ dividends_tax.stock }}</td>
+                                <td>{{ dividends_tax.dividend_per_share|floatformat:6 }}</td>
+                                <td>{{ dividends_tax.quantity }}</td>
+                                <td>{{ dividends_tax.dividend_sum|floatformat:2 }}</td>
+                                <td>{{ dividends_tax.tax|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %} 
+                        <tr class="fw-bold">
+                            <td>Total:</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>{{ total_dividends }}</td>
+                            <td>{{ total_taxes }}</td>
+                        </tr>               
+                    </tbody>
+                </table>
+            {% endif %}   
+        </div>
+    </div>
+           
+{% endblock %}

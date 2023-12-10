@@ -14,4 +14,6 @@ urlpatterns = [
     path("forex", views.forex, name="forex"),
     path("buy_stock", views.buy_stock, name="buy_stock"),
     
+    path("dividend_tax", views.dividend_tax, name="dividend_tax"),
+    
 ]

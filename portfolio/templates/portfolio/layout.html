@@ -28,7 +28,7 @@
 
     <body class="vh-100 d-flex flex-column">
 
-        <nav class="navbar navbar-expand-lg ps-2 flex-shrink-0">
+        <nav class="navbar navbar-expand-lg ps-2 flex-shrink-0 shadow-sm border-bottom">
             <a class="navbar-brand px-1 fs-4 shadow" href="/">MyTaxes</a>
               
             <div class="w-100 fs-5" id="navbarNav">
@@ -36,23 +36,38 @@
 
 					{% if user.is_authenticated %}
 						<li class="nav-item">
-							<a class="nav-link" href="{% url 'transfer' %}">Transfer</a>
+							<a class="nav-link {% if request.path == '/transfer' %} active {% endif %}" 
+								href="{% url 'transfer' %}">
+								Transfer
+							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="{% url 'forex' %}">Forex</a>
+							<a class="nav-link {% if request.path == '/forex' %} active {% endif %}"
+								href="{% url 'forex' %}">
+								Forex
+							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="{% url 'buy_stock' %}">Buy Stocks</a>
+							<a class="nav-link {% if request.path == '/buy_stock' %} active {% endif %}" 
+								href="{% url 'buy_stock' %}">
+								Buy Stocks
+							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#">Sell Stocks & Taxes</a>
+							<a class="nav-link" 
+								href="#">
+								Sell Stocks & Taxes
+							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#">Dividends & Taxes</a>
+							<a class="nav-link {% if request.path == '/dividend_tax' %} active {% endif %}" 
+								href="{% url 'dividend_tax' %}">
+								Dividends & Taxes
+							</a>
 						</li>
 
 						<div class="dropstart ms-auto">
-							<a class="btn btn-light dropdown-toggle mt-2 me-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							<a class="btn btn-light dropdown-toggle my-0 me-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
 									<path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
 								</svg>
@@ -99,7 +114,7 @@
 
     </body>
 
-    <footer class="vw-100 small d-flex justify-content-between py-2 mt-auto fs-6">
+    <footer class="vw-100 small d-flex justify-content-between py-2 mt-auto fs-6 shadow-sm border-top">
         <span class="ms-4">MyTaxes for <strong id="previous_year">{{ previous_year }}</strong> financical year</span>
         <span>Beit-Shemesh, Israel 2023</span>
         <span>
