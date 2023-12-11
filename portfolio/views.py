@@ -1,3 +1,4 @@
+from math import ceil
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django import forms
@@ -25,9 +26,109 @@ COMMITIONS = {
 
 def index(request):
     user = User.objects.get(id=request.user.id)
+    
+    # dropdown
+    first_transfer = Transfer.objects.filter(owner=user).order_by("transfer_date")[0]
+    start_year = first_transfer.get_year()
+    end_year = datetime.datetime.today().year + 1
+    list_years = []
+    for i in range(start_year, end_year):
+        list_years.append(str(i))
+       
+    # calculate starting cash for previows and current years
+    selected_year = request.GET.get('year')
+    if selected_year: 
+        # calculate forex sum for previows year
+        old_forex_list = Forex.objects.filter(
+            owner=user, 
+            forex_date__lte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
+        )
+        old_forex_sum = round(sum([el.purchasing_sum for el in old_forex_list]), 2)
+
+        # calculate sum_of_stocks for previows year
+        old_stocks_list = Buy_Stock.objects.filter(
+            owner=user,
+            buy_date__lte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
+        )
+        old_stocks_sum = round(sum(el.sum_of_stocks for el in old_stocks_list), 2)
+        
+        # calculate dividend_sum and taxes for previows year
+        old_dividends_list = Dividend_Tax.objects.filter(
+            owner=user,
+            dividend_date__lte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
+        )
+        old_dividends_sum = round(sum(el.dividend_sum for el in old_dividends_list), 2)
+        old_taxes_sum = round(sum(el.tax for el in old_dividends_list), 2)
+        
+        # clculate commisions for previows year
+        old_commitions = len(old_forex_list) * COMMITIONS["Forex"] + len(old_stocks_list) * COMMITIONS["Buy"]
+        
+        # calculate sarting cash for previows year
+        starting_cash = round(old_forex_sum + old_dividends_sum - old_stocks_sum - old_taxes_sum - old_commitions, 2)
+        print(starting_cash)
+        
+        
+        # calculate transfer_sum for current year
+        current_transfer_list = Transfer.objects.filter(
+            owner=user,
+            transfer_date__gte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
+        )
+        current_transfer_sum = round(sum([el.transfer_sum for el in current_transfer_list]), 2)
+        print(current_transfer_sum)
+        
+        # calculate forex sum for current year
+        current_forex_list = Forex.objects.filter(
+            owner=user, 
+            forex_date__gte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
+        )
+        current_forex_sum = round(sum([el.purchasing_sum for el in current_forex_list]), 2)
+        print(current_forex_sum)
+
+        # calculate sum_of_stocks for current year
+        current_stocks_list = Buy_Stock.objects.filter(
+            owner=user,
+            buy_date__gte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
+        )
+        current_stocks_sum = round(sum(el.sum_of_stocks for el in current_stocks_list), 2)
+        print(current_stocks_sum)
+        
+        # calculate dividend_sum and taxes for current year
+        current_dividends_list = Dividend_Tax.objects.filter(
+            owner=user,
+            dividend_date__gte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
+        )
+        current_dividends_sum = round(sum(el.dividend_sum for el in current_dividends_list), 2)
+        current_taxes_sum = round(sum(el.tax for el in current_dividends_list), 2)
+        print(current_dividends_sum)
+        print(current_taxes_sum)
+        
+        # clculate commisions for previows year
+        current_commitions = len(current_forex_list) * COMMITIONS["Forex"] + len(current_stocks_list) * COMMITIONS["Buy"]
+        print(current_commitions)
+        
+        # calculate sarting cash for previows year
+        ending_cash = round(current_forex_sum + current_dividends_sum - current_stocks_sum - current_taxes_sum - current_commitions, 2)
+        print(ending_cash)
+
+        return render(request, "portfolio/index.html", {
+            "list_years": list_years,
+            "selected_year": selected_year,
+            "starting_cash": starting_cash,
+            "current_transfer_sum": current_transfer_sum,
+            "current_forex_sum": current_forex_sum,
+            "current_stocks_sum": current_stocks_sum,
+            "current_dividends_sum": current_dividends_sum,
+            "current_taxes_sum": current_taxes_sum,
+            "current_commitions": current_commitions,
+            "ending_cash": ending_cash,
+            "current_stocks_list": current_stocks_list.order_by("-buy_date")
+        })
+    
     return render(request, "portfolio/index.html", {
-        "user": user,
+        "list_years": list_years,
+        "selected_year": selected_year,
     })
+    
     
 def register(request):
     if request.method == "GET":
@@ -102,17 +203,10 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("index"))
    
    
-def get_previous_year(request): 
-    previous_year = datetime.datetime.now().year - 1
-    return JsonResponse({
-        "previous_year": str(previous_year)
-    })
-
-
 @login_required   
 def transfer(request):
     user = User.objects.get(id=request.user.id)
-    user_transfers = Transfer.objects.filter(owner=user)
+    user_transfers = Transfer.objects.filter(owner=user).order_by("-transfer_date")
     # abc = sum([el.transfer_sum for el in user_transfers])
     transfers_sum = Transfer.objects.all().aggregate(Sum('transfer_sum'))['transfer_sum__sum']
     
@@ -157,7 +251,7 @@ def transfer(request):
 @login_required
 def forex(request):
     user = User.objects.get(id=request.user.id)   
-    user_exchanges = Forex.objects.filter(owner=user)
+    user_exchanges = Forex.objects.filter(owner=user).order_by("-forex_date")
     selling_sums = round(Forex.objects.all().aggregate(Sum('selling_sum'))['selling_sum__sum'], 2)
     purchasing_sums = round(Forex.objects.all().aggregate(Sum('purchasing_sum'))['purchasing_sum__sum'], 2)
 
@@ -210,7 +304,7 @@ def forex(request):
 @login_required
 def buy_stock(request):
     user = User.objects.get(id=request.user.id)
-    stocks = Buy_Stock.objects.filter(owner=user)
+    stocks = Buy_Stock.objects.filter(owner=user).order_by("-buy_date")
     total_stocks_sum = sum([el.sum_of_stocks for el in stocks])
     
     if request.method == "GET":
@@ -258,7 +352,7 @@ def buy_stock(request):
 @login_required
 def dividend_tax(request):
     user = User.objects.get(id=request.user.id)
-    dividends_taxes = Dividend_Tax.objects.filter(owner=user)
+    dividends_taxes = Dividend_Tax.objects.filter(owner=user).order_by("-dividend_date")
     stocks = Buy_Stock.objects.filter(owner=user).values('stock').distinct()
     stock_options = [(el['stock'], el['stock']) for el in stocks]
     total_dividends = round(sum([el.dividend_sum for el in dividends_taxes]), 2)
@@ -288,7 +382,7 @@ def dividend_tax(request):
                     dividend_per_share = dividend_per_share,
                     quantity = quantity,
                     dividend_sum = round(dividend_per_share * quantity, 2),
-                    tax = round(dividend_per_share * 0.25 * quantity, 2),
+                    tax = round(ceil(dividend_per_share * 2500) / 10000  * quantity * 100) / 100,
                     owner = user
                 )
                 dividend_tax.save()
@@ -310,3 +404,5 @@ def dividend_tax(request):
                 "total_dividends": total_dividends,
                 "total_taxes": total_taxes
             })
+            
+    

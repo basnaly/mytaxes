@@ -12,20 +12,6 @@
         <link href="{% static 'styles.css' %}" rel="stylesheet">
     </head>
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			fetch("/get_previous_year")
-			.then(response => response.json())
-			.then(data => {
-				const previous_year = data.previous_year;
-				document.querySelector('#previous_year').innerHTML = previous_year;
-			})
-			.catch(error => {
-				console.log("Error", error);
-			})
-		})
-	</script>
-
     <body class="vh-100 d-flex flex-column">
 
         <nav class="navbar navbar-expand-lg ps-2 flex-shrink-0 shadow-sm border-bottom">
@@ -115,7 +101,7 @@
     </body>
 
     <footer class="vw-100 small d-flex justify-content-between py-2 mt-auto fs-6 shadow-sm border-top">
-        <span class="ms-4">MyTaxes for <strong id="previous_year">{{ previous_year }}</strong> financical year</span>
+        <span class="ms-4">MyTaxes</span>
         <span>Beit-Shemesh, Israel 2023</span>
         <span>
             <a class="tax me-4" target="_blank" href="https://www.gov.il/he/departments/israel_tax_authority/govil-landing-page">

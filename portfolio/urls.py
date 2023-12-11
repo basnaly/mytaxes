@@ -8,8 +8,6 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("logout", views.logout_view, name="logout"),
     
-    path("get_previous_year", views.get_previous_year, name="get_previous_year"),
-    
     path("transfer", views.transfer, name="transfer"),
     path("forex", views.forex, name="forex"),
     path("buy_stock", views.buy_stock, name="buy_stock"),

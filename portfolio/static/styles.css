@@ -40,6 +40,13 @@ body {
     --bs-btn-color: white;
 }
 
+.btn-secondary {
+    --bs-btn-active-bg: var(--bedge-dark);
+    --bs-btn-active-color: black;
+    --bs-btn-hover-bg: var(--bedge-light);
+    --bs-btn-hover-color: black;
+}
+
 a {
     color: var(--turquoise-dark);
 }

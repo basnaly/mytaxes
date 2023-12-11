@@ -17,6 +17,9 @@ class Transfer(models.Model):
     def __str__(self):
         return f"On day {self.transfer_date} user {self.owner} transfered {self.transfer_sum} {self.transfer_currency}"
     
+    def get_year(self):
+        return self.transfer_date.year
+    
 class Forex(models.Model):
     forex_date = models.DateField()
     selling_sum = models.FloatField()
