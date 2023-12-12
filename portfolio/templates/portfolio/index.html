@@ -68,19 +68,19 @@
 
                         <tr>
                             <td>Commitions</td>
-                            <td>{{ current_dividends_sum|floatformat:2 }}</td>
+                            <td>{{ current_commitions|floatformat:2 }}</td>
                             <td>USD</td>
                         </tr>
 
                         <tr>
                             <td>Dividends</td>
-                            <td>{{ current_taxes_sum|floatformat:2 }}</td>
+                            <td>{{ current_dividends_sum|floatformat:2 }}</td>
                             <td>USD</td>
                         </tr>
 
                         <tr>
                             <td>Taxes (dividends)</td>
-                            <td>{{ current_commitions|floatformat:2 }}</td>
+                            <td>{{ current_taxes_sum|floatformat:2 }}</td>
                             <td>USD</td>
                         </tr>
 
@@ -100,7 +100,7 @@
                             <th scope="col">Stocks</th>
                             <th scope="col">Date</th>
                             <th scope="col">Price</th>
-                            <th scope="col">Ending value</th>
+                            <th scope="col">Ending price</th>
                             <th scope="col">Q-ty</th>
                             <th scope="col">Sum</th>
                             <th scope="col">Ending Sum</th>
@@ -112,10 +112,10 @@
                                 <td class="text-nowrap">{{ current_stock.stock }}</td>
                                 <td>{{ current_stock.buy_date|date:"Y-m-d" }}</td>
                                 <td>{{ current_stock.price|floatformat:2 }}</td>
-                                <td></td>
+                                <td style="color: red;">{{ current_stock.ending_price }}</td>
                                 <td>{{ current_stock.quantity }}</td>
                                 <td>{{ current_stock.sum_of_stocks|floatformat:2 }}</td>
-                                <td></td>
+                                <td style="color: red;">{{ current_stock.ending_sum }}</td>
                             </tr>
                         {% endfor %} 
                         <tr class="fw-bold">
@@ -124,9 +124,24 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>               
+                            <td>{{ current_stocks_sum }}</td>
+                            <td style="color: red;">{{ ending_sum }}</td>
+                            {% comment %} <td>The yearly result is:<td> {% endcomment %}
+                        </tr> 
+                        <tr class="fw-bold"> 
+                            <td colspan="2">The yearly result is:</td>
+
+                            {% if ending_sum > current_stocks_sum %}
+                                <td colspan="5" style="color: var(--turquoise-dark);">
+                                    You earn $ {{ earn }}! 😀
+                                </td>
+                            {% else %}
+                                <td colspan="5" style="color: red;">
+                                    You lost $ {{ lost }}! 😥
+                                </td>
+                            {% endif %}
+                            
+                        </tr>             
                     </tbody>
                 </table>
 

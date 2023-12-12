@@ -42,6 +42,10 @@ class Buy_Stock(models.Model):
     
     def __str__(self):
         return f"{self.buy_date} {self.stock} {self.price} {self.quantity} {self.sum_of_stocks} {self.owner}"
+    
+    def set_ending_price(self, ending_price):
+        self.ending_price = ending_price
+        self.ending_sum = self.ending_price * self.quantity
       
 class Dividend_Tax(models.Model):
     dividend_date = models.DateField()

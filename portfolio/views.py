@@ -11,8 +11,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 from django.db.models import Sum
+from config import API_KEY
 from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm, Dividend_TaxForm
 from django.contrib import messages
+import requests
 
 import datetime
 from .models import User, Transfer, Forex, Buy_Stock, Dividend_Tax
@@ -63,9 +65,8 @@ def index(request):
         # clculate commisions for previows year
         old_commitions = len(old_forex_list) * COMMITIONS["Forex"] + len(old_stocks_list) * COMMITIONS["Buy"]
         
-        # calculate sarting cash for previows year
+        # calculate starting cash for previows year
         starting_cash = round(old_forex_sum + old_dividends_sum - old_stocks_sum - old_taxes_sum - old_commitions, 2)
-        print(starting_cash)
         
         
         # calculate transfer_sum for current year
@@ -74,7 +75,6 @@ def index(request):
             transfer_date__gte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
         )
         current_transfer_sum = round(sum([el.transfer_sum for el in current_transfer_list]), 2)
-        print(current_transfer_sum)
         
         # calculate forex sum for current year
         current_forex_list = Forex.objects.filter(
@@ -82,15 +82,13 @@ def index(request):
             forex_date__gte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
         )
         current_forex_sum = round(sum([el.purchasing_sum for el in current_forex_list]), 2)
-        print(current_forex_sum)
 
         # calculate sum_of_stocks for current year
         current_stocks_list = Buy_Stock.objects.filter(
             owner=user,
             buy_date__gte=datetime.datetime(year=int(selected_year), month=1, day=1, hour=0, minute=0)
-        )
+        ).order_by("-buy_date")
         current_stocks_sum = round(sum(el.sum_of_stocks for el in current_stocks_list), 2)
-        print(current_stocks_sum)
         
         # calculate dividend_sum and taxes for current year
         current_dividends_list = Dividend_Tax.objects.filter(
@@ -99,17 +97,37 @@ def index(request):
         )
         current_dividends_sum = round(sum(el.dividend_sum for el in current_dividends_list), 2)
         current_taxes_sum = round(sum(el.tax for el in current_dividends_list), 2)
-        print(current_dividends_sum)
-        print(current_taxes_sum)
         
-        # clculate commisions for previows year
+        # clculate commisions for current year
         current_commitions = len(current_forex_list) * COMMITIONS["Forex"] + len(current_stocks_list) * COMMITIONS["Buy"]
-        print(current_commitions)
         
-        # calculate sarting cash for previows year
+        # calculate starting cash for previows year
         ending_cash = round(current_forex_sum + current_dividends_sum - current_stocks_sum - current_taxes_sum - current_commitions, 2)
-        print(ending_cash)
+        
+        
+        ending_sum = 0
+        
+        date_to_use = check_date(int(selected_year))
+        formatted_date = date_to_use.strftime("%Y-%m-%d")
 
+        for stock in current_stocks_list:
+            endpoint = f'https://api.polygon.io/v1/open-close/{stock.stock}/{formatted_date}?adjusted=true&apiKey={API_KEY}'
+            
+            response = requests.get(endpoint)
+            data = response.json()
+
+            # Extract the ending_price
+            try:
+                ending_price = data['close']
+                stock.set_ending_price(ending_price) # stock.set_ending_price(50.68)
+                ending_sum += stock.ending_sum
+
+            except KeyError:
+                print(f'Unable to retrieve data for {stock.stock}')
+                      
+        lost = round(current_stocks_sum - ending_sum, 2)
+        earn = round(ending_sum - current_stocks_sum, 2)
+        
         return render(request, "portfolio/index.html", {
             "list_years": list_years,
             "selected_year": selected_year,
@@ -121,7 +139,10 @@ def index(request):
             "current_taxes_sum": current_taxes_sum,
             "current_commitions": current_commitions,
             "ending_cash": ending_cash,
-            "current_stocks_list": current_stocks_list.order_by("-buy_date")
+            "current_stocks_list": current_stocks_list,
+            "ending_sum": ending_sum,
+            "lost": lost,
+            "earn": earn
         })
     
     return render(request, "portfolio/index.html", {
@@ -129,7 +150,16 @@ def index(request):
         "selected_year": selected_year,
     })
     
+
+def check_date(selected_year):
+    today = datetime.datetime.now()
+    if today.year == selected_year:
+        return today - datetime.timedelta(days=1)
+    else:
+        end_of_selected_year = datetime.datetime(selected_year, 12, 31)
+        return end_of_selected_year
     
+  
 def register(request):
     if request.method == "GET":
         return render(request, "portfolio/register.html", {
@@ -355,7 +385,7 @@ def dividend_tax(request):
     dividends_taxes = Dividend_Tax.objects.filter(owner=user).order_by("-dividend_date")
     stocks = Buy_Stock.objects.filter(owner=user).values('stock').distinct()
     stock_options = [(el['stock'], el['stock']) for el in stocks]
-    total_dividends = round(sum([el.dividend_sum for el in dividends_taxes]), 2)
+    total_dividends = sum([el.dividend_sum for el in dividends_taxes])
     total_taxes = round(sum([el.tax for el in dividends_taxes]), 2)
     
     if request.method == "GET":
