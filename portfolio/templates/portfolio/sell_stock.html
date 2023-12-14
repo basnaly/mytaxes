@@ -1,0 +1,133 @@
+{% extends "portfolio/layout.html" %}
+
+{% block body %}
+
+    <div class="d-flex justify-content-evenly align-items-start">
+
+        <div class="d-flex flex-column align-items-center mx-3 w-25 shadow mt-4">
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+
+                    const inputSellStock = document.querySelector('#sell_stock');
+                    const quantityElement = document.querySelector('#sell-quantity');
+                    const priceElement = document.querySelector('#sell-price');
+                    let total_stocks = 0;
+
+                    function calculateQuantityOfStocks () {
+                        const stock_symbol = inputSellStock.value;
+                        
+                        if (stock_symbol) {
+                            priceElement.classList.remove('invisible');
+                            quantityElement.classList.remove('invisible');
+
+                            fetch(`/get_stock_quantity?stock_symbol=${stock_symbol}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log(data)
+                                    quantityElement.max = data.total_stocks
+                                    averageBuyPrice = data.average_buy_price
+                                })
+                                .catch(error => {
+                                    console.log('Error:', error)
+                                })
+                        }
+                        else {
+                            priceElement.classList.add('invisible');
+                            quantityElement.classList.add('invisible');
+                        }   
+                    }
+
+                    function calculateSumOfStocksAndTaxes () {
+                        const price = parseFloat(priceElement.value);
+                        const quantity = parseFloat(quantityElement.value);
+                        const sum_of_stocks = +(price * quantity).toFixed(2);
+                        const sum_of_tax = +((sum_of_stocks - (averageBuyPrice * quantity)) * 25 / 100).toFixed(2)
+                        
+                        if (isNaN(sum_of_stocks)) {
+                            document.querySelector('#sold-stocks-sum').innerHTML = '';
+                            document.querySelector('#remaining-stocks').innerHTML = '';
+                            document.querySelector('#sum-stock-tax').innerHTML = '';
+                        }
+                        else {
+                            document.querySelector('#sold-stocks-sum').innerHTML = sum_of_stocks;
+                            document.querySelector('#remaining-stocks').innerHTML = quantityElement.max - quantity;
+                            document.querySelector('#sum-stock-tax').innerHTML = sum_of_tax;
+                            if (sum_of_tax < 0) {
+                                document.querySelector('#sum-stock-tax').innerHTML = 0;
+                            }
+                        }    
+                    }
+
+                    inputSellStock.addEventListener('input', calculateQuantityOfStocks); 
+                    priceElement.addEventListener('input', calculateSumOfStocksAndTaxes);
+                    quantityElement.addEventListener('input', calculateSumOfStocksAndTaxes); 
+                                   
+                })
+            </script>
+
+            <div class="mt-3 fs-5 fw-bold">Please fill the fields!</div>
+
+            <form action="{% url 'sell_stock' %}" method="post" class="container d-flex flex-column align-items-center m-4">
+                {% csrf_token %}
+                    
+                <div class="">
+                    {{ form }}
+                    <div class="calculate ps-2 mb-3">
+                        Sum of Stocks:
+                        <span id='sold-stocks-sum' class='fw-bold'></span>
+                    </div>
+                    <div class="calculate ps-2 mb-3">
+                        Remaining stocks:
+                        <span id='remaining-stocks' class='fw-bold'></span>
+                    </div>
+                    <div class="calculate ps-2 mb-3">
+                        Sum of Taxes:
+                        <span id='sum-stock-tax' class='fw-bold'></span>
+                    </div>
+                </div>
+
+                <button class="btn mt-4" type="submit">Submit</button>
+            </form>
+        </div>
+
+        <div class="d-flex flex-column align-items-center shadow px-4 pb-2 mx-3 mt-4 w-50">
+            <div class="mt-3 fs-5 mb-4 fw-bold">Sold Stocks</div>
+            {% if sold_stocks %}
+                <table class="table table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Symbol of Stock</th>
+                            <th scope="col">Price of Stock</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Sum Of Stocks</th>
+                            <th scope="col">Taxes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        {% for sold_stock in sold_stocks %}
+                            <tr>
+                                <td class="text-nowrap">{{ sold_stock.sell_date|date:"Y-m-d" }}</td>
+                                <td>{{ sold_stock.stock }}</td>
+                                <td>{{ sold_stock.price|floatformat:2 }}</td>
+                                <td>{{ sold_stock.quantity }}</td>
+                                <td>{{ sold_stock.sum_of_stocks|floatformat:2 }}</td>
+                                <td>{{ sold_stock.tax|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %} 
+                        <tr class="fw-bold">
+                            <td>Total:</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>               
+                    </tbody>
+                </table>
+            {% endif %}   
+        </div>
+    </div>
+           
+{% endblock %}

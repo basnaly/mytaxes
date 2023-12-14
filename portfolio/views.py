@@ -12,12 +12,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 from django.db.models import Sum
 from config import API_KEY
-from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm, Dividend_TaxForm
+from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm, Dividend_TaxForm, Sell_StockForm
 from django.contrib import messages
 import requests
 
 import datetime
-from .models import User, Transfer, Forex, Buy_Stock, Dividend_Tax
+from .models import User, Transfer, Forex, Buy_Stock, Dividend_Tax, Sell_Stocks
 
 
 COMMITIONS = {
@@ -434,5 +434,99 @@ def dividend_tax(request):
                 "total_dividends": total_dividends,
                 "total_taxes": total_taxes
             })
-            
+ 
+@login_required 
+def get_stock_quantity(request):
+    user = User.objects.get(id=request.user.id)
     
+    # request.GET = {"stock_symbol":"VTI"}  request.GET["stock_symbol"] => "VTI"  request.GET.get("stock_symbol") => "VTI"
+    # url 127.../get_stock_quantity?stock_symbol=VTI
+    
+    user_bought_stocks = Buy_Stock.objects.filter(owner=user, stock=request.GET.get('stock_symbol'))
+    # If form selested FLOT
+    # <QuerySet [<Buy_Stock: 2023-08-24 FLOT 50.795 100 5079.5 basnaly, nataly, bas, basnaly@gmail.com>, 
+    #            <Buy_Stock: 2023-11-02 FLOT 50.6193 20 1012.39 basnaly, nataly, bas, basnaly@gmail.com>]>
+    total_bought_stocks = sum([el.quantity for el in user_bought_stocks])
+    average_buy_price = round(sum([el.sum_of_stocks for el in user_bought_stocks]) / total_bought_stocks, 2)
+    
+    user_sold_stocks = Sell_Stocks.objects.filter(owner=user, stock=request.GET.get('stock_symbol'))
+    total_sold_stocks = sum(el.quantity for el in user_sold_stocks)
+    
+    total_stocks = total_bought_stocks - total_sold_stocks
+    
+    return JsonResponse({
+        "total_stocks": total_stocks,
+        "average_buy_price": average_buy_price
+    })
+
+
+@login_required
+def sell_stock(request):
+    user = User.objects.get(id=request.user.id)       
+    stocks = Buy_Stock.objects.filter(owner=user).values("stock").distinct()
+    # [{'stock': 'VTI'}, {'stock': 'HDV'}, {'stock': 'FLOT'}]
+
+    stock_options = [(el['stock'], el['stock']) for el in stocks]
+    # [('VTI', 'VTI'), ('HDV', 'HDV'), ('FLOT', 'FLOT')]
+    
+    form = Sell_StockForm()
+    form.fields['stock'].widget.choices = [('', 'Select symbol')] + stock_options
+    
+    sold_stocks = Sell_Stocks.objects.filter(owner=user).order_by("-sell_date")
+     
+    if request.method == "GET":
+        return render(request, "portfolio/sell_stock.html",{
+            "form": form,
+            "sold_stocks": sold_stocks
+        })
+        
+    else:
+        form = Sell_StockForm(request.POST)
+        if form.is_valid():
+            sell_date = form.cleaned_data["sell_date"]
+            stock = form.cleaned_data["stock"]
+            price = form.cleaned_data["price"]
+            quantity = form.cleaned_data["quantity"]
+            
+            user_bought_stocks = Buy_Stock.objects.filter(owner=user, stock=stock)
+            total_bought_stocks = sum([el.quantity for el in user_bought_stocks])
+            user_sold_stocks = Sell_Stocks.objects.filter(owner=user, stock=stock)
+            total_sold_stocks = sum([el.quantity for el in user_sold_stocks])
+            total_stocks = total_bought_stocks - total_sold_stocks
+            
+            if not total_stocks:
+                average_buy_price = 0
+            else:
+                average_buy_price = round(sum([el.sum_of_stocks for el in user_bought_stocks]) / total_bought_stocks, 2)
+            if total_stocks >= quantity:
+                try:
+                    sum_of_stocks = round(price * quantity, 2)
+                    tax = round((sum_of_stocks - (average_buy_price * quantity)) * 25 / 100, 2)
+                    print(tax)
+                    sold_stock = Sell_Stocks.objects.create(
+                        sell_date = sell_date,
+                        stock = stock,
+                        price = price, 
+                        quantity = quantity,
+                        sum_of_stocks = sum_of_stocks,
+                        tax = tax,
+                        owner = user
+                    )
+                    sold_stock.save()
+                except Exception as e:
+                    print(e)
+                    messages.error(request, "Something went wrong. Try again later.")
+                    return render(request, "portfolio/sell_stock.html", {
+                        "form": form,
+                        "sold_stocks": sold_stocks
+                    })
+                messages.success(request, f"You sell of {quantity} {stock} stocks was successfully added!")
+                return HttpResponseRedirect("sell_stock")
+            else:
+                messages.error(request, f"You have only {total_stocks} {stock} stocks!")
+                return HttpResponseRedirect("sell_stock")
+                
+        else:
+            messages.error(request, "The form is not valid!")
+            return HttpResponseRedirect("sell_stock")
+                

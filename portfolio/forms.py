@@ -36,7 +36,13 @@ class Buy_StockForm(forms.Form):
        
 class Dividend_TaxForm(forms.Form):
     dividend_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mb-3', 'max': str(date.today())}), label='')
-    stock = forms.CharField(widget=forms.Select(attrs={'plaseholder': 'Symbol of stock', 'class': 'form-control mb-3'}, choices=[]),  label='')
+    stock = forms.CharField(widget=forms.Select(attrs={'placeholder': 'Symbol of stock', 'class': 'form-control mb-3'}, choices=[]),  label='')
     dividend_per_share = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Dividend per share', 'id': 'dividend-share', 'class': 'form-control mb-3'}), label='')
     quantity = forms.IntegerField(widget=forms.NumberInput(attrs={'placeholder': 'Q-ty of stocks', 'id': 'quantity-stocks', 'class': 'form-control mb-3'}), label='')
+    
+class Sell_StockForm(forms.Form):
+    sell_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mb-3', 'max': str(date.today())}), label='')
+    stock = forms.CharField(widget=forms.Select(attrs={'placeholder': 'Symbol of stock', 'class': 'form-control mb-3', 'id': 'sell_stock'}, choices=[]), label='')
+    price = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Price of stock', 'class': 'form-control invisible mb-3', 'id': 'sell-price'}), label='')
+    quantity = forms.IntegerField(widget=forms.NumberInput(attrs={'placeholder': 'Q-ty of stocks', 'class': 'form-control invisible mb-3', 'id': 'sell-quantity'}), label='')
     

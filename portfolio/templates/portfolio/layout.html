@@ -40,8 +40,8 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" 
-								href="#">
+							<a class="nav-link {% if request.path == '/sell_stock' %} active {% endif %}" 
+								href="{% url 'sell_stock' %}">
 								Sell Stocks & Taxes
 							</a>
 						</li>

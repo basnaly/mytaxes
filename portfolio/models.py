@@ -58,3 +58,18 @@ class Dividend_Tax(models.Model):
     
     def __str__(self):
         return f"{self.dividend_date} {self.stock} {self.dividend_per_share} {self.quantity} {self.dividend_sum} {self.tax} {self.owner}"
+    
+    
+class Sell_Stocks(models.Model):
+    sell_date = models.DateField()
+    stock = models.CharField(max_length=10)
+    price = models.FloatField()
+    quantity = models.IntegerField()
+    sum_of_stocks = models.FloatField()
+    tax = models.FloatField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sell_stocks')
+    
+    def __str__(self):
+        return f"{self.sell_date} {self.stock} {self.price} {self.quantity} {self.sum_of_stocks} {self.tax} {self.owner}"
+    
+    
