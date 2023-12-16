@@ -35,6 +35,11 @@
                 <table class="table table-striped text-center shadow w-50 mx-4">
                     <thead>
                         <tr>
+                            <th colspan="3" scope="col" class="fs-5" style="color: var(--turquoise-dark)">
+                                General summary
+                            </th>
+                        </tr>
+                        <tr>
                             <th scope="col">Positions</th>
                             <th scope="col">Sum</th>
                             <th scope="col">Currency</th>
@@ -97,6 +102,11 @@
                 <table class="table table-striped text-center shadow mx-4">
                     <thead>
                         <tr>
+                            <th colspan="7" scope="col" class="fs-5" style="color: var(--turquoise-dark)">
+                                Purchased stocks
+                            </th>
+                        </tr>
+                        <tr>
                             <th scope="col">Stocks</th>
                             <th scope="col">Date</th>
                             <th scope="col">Price</th>
@@ -115,7 +125,7 @@
                                 <td style="color: red;">{{ current_stock.ending_price }}</td>
                                 <td>{{ current_stock.quantity }}</td>
                                 <td>{{ current_stock.sum_of_stocks|floatformat:2 }}</td>
-                                <td style="color: red;">{{ current_stock.ending_sum }}</td>
+                                <td style="color: red;">{{ current_stock.ending_sum|floatformat:2 }}</td>
                             </tr>
                         {% endfor %} 
                         <tr class="fw-bold">
@@ -124,9 +134,8 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td>{{ current_stocks_sum }}</td>
-                            <td style="color: red;">{{ ending_sum }}</td>
-                            {% comment %} <td>The yearly result is:<td> {% endcomment %}
+                            <td>{{ current_stocks_sum|floatformat:2 }}</td>
+                            <td style="color: red;">{{ ending_sum|floatformat:2 }}</td>
                         </tr> 
                         <tr class="fw-bold"> 
                             <td colspan="2">The yearly result is:</td>

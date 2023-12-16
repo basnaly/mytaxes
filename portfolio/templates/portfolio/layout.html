@@ -60,7 +60,7 @@
 							</a>
 							<ul class="dropdown-menu">
 								<li class="text-center my-1 fs-5">Hello, {{ user.first_name|title }}!</li>
-								<li><a class="dropdown-item" href="#">My profile</a></li>
+								<li><a class="dropdown-item" href="{% url 'profile' %}">My profile</a></li>
 								<li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
 							</ul>
 						</div>

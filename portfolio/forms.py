@@ -1,7 +1,7 @@
 from django import forms
 from .models import User, Transfer, Forex, Buy_Stock
 from datetime import date
-
+from django.contrib.auth import password_validation
 
 
 class RegisterForm(forms.Form):
@@ -9,8 +9,8 @@ class RegisterForm(forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': 'Email', 'class': 'form-control'}), label='')
     first_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'First Name', 'class': 'form-control'}), label='')
     last_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Last Name', 'class': 'form-control'}), label='')
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password', 'class': 'form-control'}), label='')
-    confirmation = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirmation', 'class': 'form-control'}), label='')
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password', 'class': 'form-control'}), label='', validators=[password_validation.validate_password])
+    confirmation = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirmation', 'class': 'form-control'}), label='', validators=[password_validation.validate_password])
 
 class LoginForm(forms.Form):
     username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Username', 'class': 'form-control mb-3'}), label='')
@@ -45,4 +45,11 @@ class Sell_StockForm(forms.Form):
     stock = forms.CharField(widget=forms.Select(attrs={'placeholder': 'Symbol of stock', 'class': 'form-control mb-3', 'id': 'sell_stock'}, choices=[]), label='')
     price = forms.FloatField(widget=forms.NumberInput(attrs={'placeholder': 'Price of stock', 'class': 'form-control invisible mb-3', 'id': 'sell-price'}), label='')
     quantity = forms.IntegerField(widget=forms.NumberInput(attrs={'placeholder': 'Q-ty of stocks', 'class': 'form-control invisible mb-3', 'id': 'sell-quantity'}), label='')
-    
+     
+class ProfileForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': 'Email', 'class': 'form-control'}), label='')
+    first_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'First Name', 'class': 'form-control'}), label='')
+    last_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Last Name', 'class': 'form-control'}), label='')
+    current_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Current password', 'class': 'form-control'}), label='')
+    new_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'New password', 'class': 'form-control'}), label='', validators=[password_validation.validate_password])
+    confirmation = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirmation', 'class': 'form-control'}), label='', validators=[password_validation.validate_password])

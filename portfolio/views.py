@@ -1,23 +1,23 @@
 from math import ceil
-from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django import forms
 from django.http import HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 from django.db.models import Sum
 from config import API_KEY
-from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm, Dividend_TaxForm, Sell_StockForm
+from portfolio.forms import RegisterForm, LoginForm, TransferForm, ForexForm, Buy_StockForm, Dividend_TaxForm, Sell_StockForm, ProfileForm
 from django.contrib import messages
 import requests
-
+from django.contrib.auth import update_session_auth_hash
 import datetime
 from .models import User, Transfer, Forex, Buy_Stock, Dividend_Tax, Sell_Stocks
+from django.contrib.auth.hashers import check_password
 
 
 COMMITIONS = {
@@ -176,7 +176,7 @@ def register(request):
             confirmation = form.cleaned_data["confirmation"]
             
             if password != confirmation:
-                return render(request, "petclinic/register.html", {
+                return render(request, "portfolio/register.html", {
                     "message": "Password must match conformation."
                 })
             try:
@@ -230,9 +230,64 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return HttpResponseRedirect(reverse("login"))
    
-   
+
+@login_required
+def profile(request):
+    user = User.objects.get(id=request.user.id)
+    if request.method == "GET":
+        return render(request, "portfolio/profile.html", {
+            "form": ProfileForm(initial={
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name":user.last_name
+            })
+        })
+       
+    else:
+        form = ProfileForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            first_name = form.cleaned_data["first_name"]
+            last_name = form.cleaned_data["last_name"]
+            current_password = form.cleaned_data["current_password"]
+            new_password = form.cleaned_data["new_password"]
+            confirmation = form.cleaned_data["confirmation"]
+            
+            if new_password != confirmation:
+                messages.error(request, "The new password must match conformation.")
+                return render(request, "portfolio/profile.html", {
+                    "form": form
+                })
+                
+            if not check_password(current_password, user.password):
+                messages.error(request, "The current password isn't much.")
+                return render(request, "portfolio/profile.html", {
+                    "form": form
+                })
+            
+            try:
+                user.email = email
+                user.first_name = first_name
+                user.last_name = last_name
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)
+                
+            except IntegrityError:
+                messages.error(request, "Something went wrong. Try again later.")
+                return render(request, "portfolio/profile.html", {
+                    "form": form
+                })
+            messages.success(request, "Your profile was successfully changed!")
+            return HttpResponseRedirect(reverse("index"))
+        
+        else: 
+            messages.error(request, "The form is not valid!")
+            return  HttpResponseRedirect(reverse("profile"))        
+
+
 @login_required   
 def transfer(request):
     user = User.objects.get(id=request.user.id)
