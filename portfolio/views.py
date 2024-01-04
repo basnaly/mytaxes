@@ -184,7 +184,7 @@ def register(request):
                     username = username,
                     email = email,
                     first_name = first_name,
-                    last_name =last_name,
+                    last_name = last_name,
                     password = password,
                 )
                 new_user.save()
@@ -248,30 +248,32 @@ def profile(request):
     else:
         form = ProfileForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data["email"]
-            first_name = form.cleaned_data["first_name"]
-            last_name = form.cleaned_data["last_name"]
-            current_password = form.cleaned_data["current_password"]
-            new_password = form.cleaned_data["new_password"]
-            confirmation = form.cleaned_data["confirmation"]
+            email = form.cleaned_data.get("email")
+            first_name = form.cleaned_data.get("first_name")
+            last_name = form.cleaned_data.get("last_name")
+            current_password = form.cleaned_data.get("current_password")
+            new_password = form.cleaned_data.get("new_password")
+            confirmation = form.cleaned_data.get("confirmation")
             
-            if new_password != confirmation:
-                messages.error(request, "The new password must match conformation.")
-                return render(request, "portfolio/profile.html", {
-                    "form": form
-                })
-                
             if not check_password(current_password, user.password):
-                messages.error(request, "The current password isn't much.")
+                messages.error(request, "The current password does't match.")
                 return render(request, "portfolio/profile.html", {
                     "form": form
                 })
             
+            if new_password:
+                if new_password != confirmation:
+                    messages.error(request, "The new password must match conformation.")
+                    return render(request, "portfolio/profile.html", {
+                        "form": form
+                    })
+                else:
+                    user.set_password(new_password)
+                
             try:
                 user.email = email
                 user.first_name = first_name
                 user.last_name = last_name
-                user.set_password(new_password)
                 user.save()
                 update_session_auth_hash(request, user)
                 
@@ -285,7 +287,9 @@ def profile(request):
         
         else: 
             messages.error(request, "The form is not valid!")
-            return  HttpResponseRedirect(reverse("profile"))        
+            return redirect(request, "portfolio/profile.html", {
+                "form": form
+            })     
 
 
 @login_required   
